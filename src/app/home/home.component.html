@@ -1,91 +1,86 @@
-<div class="container-fluid page">
- 
-  <header class="cont">
-    <div class="home">Home</div>
-    <div class="container" >
-     
-        <h6>
-          Statut
-        </h6>
+<div class="container-fluid-fix page-fix">
+  <header class="cont-fix">
+    <div class="home-fix">Home</div>
+    <form [formGroup]="filterForm" class="form-layout-fix">
 
-        <div id="status-select">
-        <select name=""  class=" rounded-left border border-grey">
-          <option value="en cour">en progrés</option>
-          <option value="terminé">terminé</option>
+      <!-- Status Filter -->
+      <div class="form-group-fix">
+        <label for="status-select-fix">Statut</label>
+        <select formControlName="status" id="status-select-fix" class="form-control-fix" (change)="filterIms()">
+          <option value="all">Tous</option>
+          <option value="en progrés">en progrés</option>
+          <option value="Cloturée">terminé</option>
         </select>
       </div>
-<div class="period">
-<b>Période</b><br/>
 
-     <input type="date" class=" rounded-left border border-grey">-<input type="date" class=" rounded-left border border-grey">
-</div>
-    
-      <div >
-        <form  class="serachform" >
-          <div >
-          <input type="text" [(ngModel)]="searchText" name="searchTerm" class=" rounded-left border border-grey">
+      <!-- Period Filter -->
+      <div class="form-group-fix">
+        <label>Période</label>
+        <div>
+          <input type="date" formControlName="start" class="form-control-fix">
+          <input type="date" formControlName="end" class="form-control-fix">
         </div>
-          <button type="submit" class="searchbtn"><i class="fa fa-search"></i></button>
-        </form>
       </div>
 
-      <div>
-        <button type="button" class="create-ims btn btn-success" mdbRipple (click)="openDialog()">Créer une  IMS</button>
-      </div>  
-   
+      <!-- Search Field -->
+      <div class="form-group-fix">
+        <input type="text" formControlName="search" class="form-control-fix">
+        <button type="submit" class="btn-fix searchbtn-fix"><i class="fa fa-search"></i></button>
       </div>
-  
-     </header>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">IMS</th>
-          <th scope="col">Date</th>
-          <th scope="col">Responsable</th>
-          <th scope="col">Traitement etude impact</th>
-          <th scope="col">Taux de retard</th>
-          <th scope="col">Success check</th>
-          <th scope="col">Audit </th>
-          <th  scope="col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr  *ngFor="let e of ims">
-          <td scope="row">{{e.id}}</td>
-          <td scope="row">{{e.date|date}}
-            </td>
-          <td scope="row">
-            {{e.responsable}}
-          </td>
-          <td scope="row">0%</td>
-          <td scope="row">0%</td>
-          <td>
-            <select name="Status" id="Status" (change)="updateStatus(e.id, $event, 'sucesscheck')">
-              <option value="en progrés" class="in-progress" [selected]="e.sucesscheck === 'en progrés'">en progrés</option>
-              <option value="Cloturée" class="closed" [selected]="e.sucesscheck === 'Cloturée'">Cloturée</option>
-            </select>
-          </td>
-          <td>
-            <select name="Status" id="Status" (change)="updateStatus(e.id, $event, 'audit')">
-              <option value="en progrés" class="in-progress" [selected]="e.audit === 'en progrés'">en progrés</option>
-              <option value="Cloturée" class="closed" [selected]="e.audit === 'Cloturée'">Cloturée</option>
-            </select>
-          </td>
-         
-          <td>
-            <button class="btn btn-danger" aria-label="Delete" style="margin-right: 7px;" (click)="confirmAndDelete(e.id)">
-              <i class="fa fa-trash-o" aria-hidden="true"></i>
-            </button>
-            <button type="button" class="viewdetails btn btn-primary" mdbRipple (click)="goToDetails(e.id)"> Détails</button>
 
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <div>
-    <mat-paginator [length]="100"
-    [pageSize]="5"
-    [pageSizeOptions]="[5, 10, 15, 50]"
-    aria-label="Select page">
-</mat-paginator></div>
+      <!-- Create IMS Button -->
+      <div class="form-group-fix">
+        <button type="button" class="btn-fix create-ims-fix btn-success-fix" (click)="openDialog()">Créer une IMS</button>
+      </div>
+
+    </form>
+  </header>
+
+
+
+
+
+<table class="table">
+    <thead>
+    <tr>
+      <th scope="col">IMS</th>
+      <th scope="col">Date</th>
+      <th scope="col">Responsable</th>
+      <th scope="col">Traitement etude impact</th>
+      <th scope="col">Taux de retard</th>
+      <th scope="col">Success check</th>
+      <th scope="col">Audit</th>
+      <th scope="col"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let e of filteredIms">
+      <td>{{e.id}}</td>
+      <td>{{e.date | date}}</td>
+      <td>{{e.responsable}}</td>
+      <td>0%</td>
+      <td>0%</td>
+      <td>
+        <select (change)="updateStatus(e.id, $event, 'sucesscheck')">
+          <option [selected]="e.sucesscheck === 'en progrés'" value="en progrés">en progrés</option>
+          <option [selected]="e.sucesscheck === 'Cloturée'" value="Cloturée">Cloturée</option>
+        </select>
+      </td>
+      <td>
+        <select (change)="updateStatus(e.id, $event, 'audit')">
+          <option [selected]="e.audit === 'en progrés'" value="en progrés">en progrés</option>
+          <option [selected]="e.audit === 'Cloturée'" value="Cloturée">Cloturée</option>
+        </select>
+      </td>
+      <td>
+        <button class="btn btn-danger" aria-label="Delete" (click)="confirmAndDelete(e.id)">
+          <i class="fa fa-trash-o" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="btn viewdetails btn-primary" (click)="goToDetails(e.id)">Détails</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <mat-paginator [length]="100" [pageSize]="5" [pageSizeOptions]="[5, 10, 15, 50]" aria-label="Select page">
+  </mat-paginator>
 </div>

@@ -16,7 +16,7 @@ export class ImsService {
     return this.http.get<Ims>(`${this.baseUrl}/${id}`);
   }
   createIms(ims: Ims): Observable<Object> {
-    return this.http.post(`${this.baseUrl}/create`, ims);
+    return this.http.post(`${this.baseUrl}`, ims);
   }
   deleteIms(id: number): Observable<Object> {
     return this.http.delete(`${this.baseUrl}/${id}`);

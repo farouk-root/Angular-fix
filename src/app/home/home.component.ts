@@ -8,7 +8,7 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core'; 
+import { MatNativeDateModule } from '@angular/material/core';
 import { DialogComponent } from '../dialog/dialog.component';
 import { OnInit } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
@@ -23,7 +23,7 @@ import { Ims } from '../model/ims';
   selector: 'app-home',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     FormsModule,
     MatDialogModule,
     MatFormFieldModule,
@@ -31,7 +31,7 @@ import { Ims } from '../model/ims';
     MatOptionModule,
     MatPaginatorModule,
     MatDatepickerModule,
-    MatNativeDateModule 
+    MatNativeDateModule
     ,ReactiveFormsModule ,HttpClientModule
   ],
   templateUrl: './home.component.html',
@@ -40,36 +40,49 @@ import { Ims } from '../model/ims';
 
 export class HomeComponent implements OnInit {
   ims: Ims[] = [];
+  filteredIms: Ims[] = [];
 
-  date1:any;
-  date2:any;
-  days:any;
-  selectClasscheck: string = '';
-  selectaudit: string = '';
-
-
-  dateRangeForm = new FormGroup({
+  filterForm = new FormGroup({
+    status: new FormControl('all'),  // Default to 'all' to show all records initially
     start: new FormControl(),
     end: new FormControl(),
+    search: new FormControl()
   });
 
-  searchText: string = '';
-
   constructor(
-    private router: Router,
+    private imsService: ImsService,
     private dialog: MatDialog,
-    private imsService: ImsService
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.getAllIms();
+    this.filterForm.valueChanges.subscribe(() => this.filterIms());
   }
 
   private getAllIms(): void {
-    this.imsService.getAllIms().subscribe((data) => {
+    this.imsService.getAllIms().subscribe((data: Ims[]) => {
       this.ims = data;
+      this.filterIms();
     });
   }
+
+  public filterIms(): void {
+    const formValues = this.filterForm.value;
+    this.filteredIms = this.ims.filter(ims => {
+      const date = new Date(ims.date);
+      const startDate = formValues.start ? new Date(formValues.start) : null;
+      const endDate = formValues.end ? new Date(formValues.end) : null;
+      const statusMatch = formValues.status === 'all' || ims.sucesscheck === formValues.status;
+      const startDateMatch = !startDate || date >= startDate;
+      console.log('startDateMatch', startDateMatch)
+      const endDateMatch = !endDate || date <= endDate;
+      const searchMatch = !formValues.search || ims.responsable.toLowerCase().includes(formValues.search.toLowerCase());
+
+      return statusMatch && startDateMatch && endDateMatch && searchMatch;
+    });
+  }
+
   confirmAndDelete(id: number): void {
     if (confirm('Are you sure you want to delete this IMS?')) {
       this.deleteIms(id);
@@ -77,12 +90,11 @@ export class HomeComponent implements OnInit {
   }
 
   private deleteIms(id: number): void {
-    this.imsService.deleteIms(id).subscribe(data => {
-      console.log(data);
+    this.imsService.deleteIms(id).subscribe(() => {
       this.getAllIms();
     });
   }
-  
+
   goToDetails(id: number): void {
     this.router.navigate(['/imsstatus', id]);
   }
@@ -90,15 +102,14 @@ export class HomeComponent implements OnInit {
   openDialog(): void {
     this.dialog.open(DialogComponent, { width: '30%' });
   }
-  updateStatus(id: number, event: Event, field: 'sucesscheck' | 'audit'): void {   
-     const value = (event.target as HTMLSelectElement).value;
+
+  updateStatus(id: number, event: Event, field: 'sucesscheck' | 'audit'): void {
+    const value = (event.target as HTMLSelectElement).value;
     this.imsService.getImsById(id).subscribe(ims => {
       ims[field] = value;
-      this.imsService.updateIms(id, ims).subscribe(data => {
-        console.log('Status updated successfully', data);
-        this.getAllIms();
+      this.imsService.updateIms(id, ims).subscribe(() => {
+        this.getAllIms();  // Refresh the list after updating status
       });
     });
   }
-
 }
